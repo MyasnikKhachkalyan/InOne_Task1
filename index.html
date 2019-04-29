@@ -17,7 +17,7 @@
                     textareaEl.setAttribute("id", "textArea");
                     textareaEl.setAttribute("cols", 100);
                     textareaEl.setAttribute("rows", 10);
-                    //textareaEl.setAttribute("ng-change", "sending");
+                    textareaEl.setAttribute("ng-change", "sending()");
                     element.append(textareaEl); 
                     for(key in scope.data){
                         let spanEl = document.createElement("SPAN");
@@ -90,14 +90,16 @@
                                 "z-index": 0
                             });
                         }
-                        
                     }
-                    // function sending(){
+                    // element.find('textarea').on('change', function(event){
+                    //     scope.dataToSend = textareaEl.value;
+                    //     console.log(scope.dataToSend);
+                    // })
+                    // scope.sending = function(){
                     //     scope.dataToSend = textareaEl.value;
                     //     console.log(scope.dataToSend);
                     // }   
                 },
-
             };
         }]);
         dragApp.controller('DragCtrl', function ($scope){
