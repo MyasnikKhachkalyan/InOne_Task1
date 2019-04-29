@@ -9,34 +9,58 @@
             return {
                 scope: {
                     data: '=',
-                    dropVal: '&callbackFn' 
+                    dataToSend: '=', 
                 },
                 link: function(scope, element, attr) {
-                    var startX = 0, startY = 0, x = 0, y = 0;
+
+                    let textareaEl = document.createElement("TEXTAREA");
+                    textareaEl.setAttribute("id", "textArea");
+                    textareaEl.setAttribute("cols", 100);
+                    textareaEl.setAttribute("rows", 10);
+                    //textareaEl.setAttribute("ng-change", "sending");
+                    element.append(textareaEl); 
+                    for(key in scope.data){
+                        let spanEl = document.createElement("SPAN");
+                        spanEl.setAttribute("id", key);
+                        spanEl.setAttribute("x", 0);
+                        spanEl.setAttribute("y", 0);
+                        spanEl.setAttribute("startX", 0);
+                        spanEl.setAttribute("startY", 0);
+                        spanEl.append(document.createTextNode(key));
+                        element.append(spanEl);
+                    }
                     
+                    let spans = element.find('span');
 
-                    element.css({
-                    position: 'relative',
-                    border: '1px solid red',
-                    backgroundColor: 'lightgrey',
-                    cursor: 'pointer'
-                    });
 
-                    element.on('mousedown', function(event) {
-                        // Prevent default dragging of selected content
+                    spans.css({
+                        position: 'relative',
+                        border: '1px solid red',
+                        backgroundColor: 'lightgrey',
+                        cursor: 'pointer'
+                        });
+
+                    spans.on('mousedown', function(event) {
                         event.preventDefault();
-                        startX = event.pageX - x;
-                        startY = event.pageY - y;
+                        let activeElement = angular.element(event.target);
+                        activeElement.css({
+                            "z-index": 1
+                        });
+                        
+                        activeElement.attr('startX', event.pageX - activeElement.attr('x')*1);
+                        activeElement.attr('startY', event.pageY - activeElement.attr('y')*1);
                         $document.on('mousemove', mousemove);
                         $document.on('mouseup', mouseup);
                     });
 
                     function mousemove(event) {
-                        y = event.pageY - startY;
-                        x = event.pageX - startX;
-                        element.css({
-                        top: y + 'px',
-                        left:  x + 'px'
+                        let activeElement = angular.element(event.target);
+                        activeElement.attr('y', event.pageY - activeElement.attr('startY')*1);
+                        activeElement.attr('x', event.pageX - activeElement.attr('startX')*1);
+
+                        activeElement.css({
+                            top: activeElement.attr('y') + 'px',
+                            left:  activeElement.attr('x') + 'px'
                         });
                         
                     }
@@ -44,20 +68,34 @@
                     function mouseup(event) {
                         $document.off('mousemove', mousemove);
                         $document.off('mouseup', mouseup);
-                        console.log(scope.data[event.target.firstChild.data]);
-                        let textArea = document.getElementById("textArea");
-                        if(event.pageX>textArea.offsetLeft && event.pageX<(textArea.offsetLeft+textArea.offsetWidth) && event.pageY>textArea.offsetTop && event.pageY<(textArea.offsetTop+textArea.offsetHeight)){
-                            scope.dropVal({arg: scope.data[event.target.firstChild.data]})
-                            scope.$apply();
-                            y=0;
-                            x=0;
-                            element.css({
-                                top: y + 'px',
-                                left:  x + 'px'
+                        let activeElement = angular.element(event.target);
+                        let childName = event.target.firstChild;
+                        if(event.pageX>textareaEl.offsetLeft && event.pageX<(textareaEl.offsetLeft+textareaEl.offsetWidth) && event.pageY>textareaEl.offsetTop && event.pageY<(textareaEl.offsetTop+textareaEl.offsetHeight)){
+                            if(textareaEl.value == undefined){
+                                if(childName != undefined){
+                                    textareaEl.value = scope.data[childName.data];
+                                }    
+                            }
+                            else{
+                                if(childName != undefined){
+                                    textareaEl.value += scope.data[childName.data];
+                                }    
+                            }
+                            activeElement.attr('y', 0);
+                            activeElement.attr('x', 0);
+                            
+                            activeElement.css({
+                                top: activeElement.attr('y') + 'px',
+                                left:  activeElement.attr('x') + 'px',
+                                "z-index": 0
                             });
                         }
                         
                     }
+                    // function sending(){
+                    //     scope.dataToSend = textareaEl.value;
+                    //     console.log(scope.dataToSend);
+                    // }   
                 },
 
             };
@@ -67,21 +105,16 @@
                 date : "01.01.2000",
                 text : "birthdayGirl",
             }
-            $scope.droping = function(arg){
-                if($scope.inputArea == undefined){
-                    $scope.inputArea = arg;
-                }
-                else{
-                    $scope.inputArea += arg;
-                }  
-                console.log($scope.inputArea);        
-            }
+            $scope.recievedData = "";
+            $scope.$watch('recievedData', function(newVal, oldVal){
+                // $scope.$apply();
+            })  
         });
 
     </script>
 </head>
 <body ng-app="dragdrop" ng-controller="DragCtrl">
-        <textarea id="textArea" rows="4" cols="50" ng-model="inputArea"> </textarea>
-        <span my-draggable data="hardCodedData" callback-fn="droping(arg)"  ng-repeat="(key, value) in hardCodedData">{{key}}</span>
+        <div my-draggable data="hardCodedData" dataToSend="recievedData" ></div>
+        <div><h1>{{recievedData}}</h1></div>
 </body>
 </html>
