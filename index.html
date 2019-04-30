@@ -9,8 +9,9 @@
             return {
                 scope: {
                     data: '=',
-                    dataToSend: '=', 
+                    dataToSend: '=bind', 
                 },
+               // bindToController: true,
                 link: function(scope, element, attr) {
 
                     let textareaEl = document.createElement("TEXTAREA");
@@ -74,11 +75,17 @@
                             if(textareaEl.value == undefined){
                                 if(childName != undefined){
                                     textareaEl.value = scope.data[childName.data];
+                                    scope.$parent.$apply(function(){
+                                        scope.dataToSend = textareaEl.value;
+                                    });
                                 }    
                             }
                             else{
                                 if(childName != undefined){
                                     textareaEl.value += scope.data[childName.data];
+                                    scope.$parent.$apply(function(){
+                                        scope.dataToSend = textareaEl.value;
+                                    });
                                 }    
                             }
                             activeElement.attr('y', 0);
@@ -91,10 +98,17 @@
                             });
                         }
                     }
-                    // element.find('textarea').on('change', function(event){
-                    //     scope.dataToSend = textareaEl.value;
-                    //     console.log(scope.dataToSend);
+                    // textareaEl.addEventListener("onchange", function(){
+                    //     console.log("faoefj");
                     // })
+                    element.find('textarea').on('input', function(event){
+                       
+                        scope.$parent.$apply(function(){
+                            scope.dataToSend = textareaEl.value;
+                        });
+                        //scope.dataToSend = textareaEl.value;
+                        console.log(scope.dataToSend);
+                    });
                     // scope.sending = function(){
                     //     scope.dataToSend = textareaEl.value;
                     //     console.log(scope.dataToSend);
@@ -102,21 +116,32 @@
                 },
             };
         }]);
-        dragApp.controller('DragCtrl', function ($scope){
+        dragApp.controller('DragCtrl', function ($scope, $interval){
             $scope.hardCodedData = {
                 date : "01.01.2000",
                 text : "birthdayGirl",
             }
             $scope.recievedData = "";
-            $scope.$watch('recievedData', function(newVal, oldVal){
-                // $scope.$apply();
-            })  
+           
+            // $interval(function(){
+            //     //debugger;
+            //   //console.log($scope.recievedData)
+            //     }, 2000);
+
+            $scope.toShow = "";
+            $scope.showingFunc = function(){
+                // debugger;
+                console.log($scope.recievedData);
+                $scope.toShow = $scope.recievedData;
+            }    
         });
 
     </script>
 </head>
 <body ng-app="dragdrop" ng-controller="DragCtrl">
-        <div my-draggable data="hardCodedData" dataToSend="recievedData" ></div>
-        <div><h1>{{recievedData}}</h1></div>
+        <div my-draggable data="hardCodedData" bind="recievedData" ></div>
+        <button ng-click="showingFunc()">ShowRecievedData</button>
+        <div><h1>{{toShow}}</h1></div>
+
 </body>
 </html>
